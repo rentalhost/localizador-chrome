@@ -1,0 +1,258 @@
+<!DOCTYPE html5>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Localizador</title>
+        <link rel="stylesheet" href="publics/vendor/semantic-ui/semantic.css">
+        <link rel="stylesheet" href="publics/extension.css">
+        <script src="publics/vendor/jquery.js"></script>
+        <script src="publics/vendor/semantic-ui/semantic.js"></script>
+        <script src="publics/Utils.js"></script>
+        <script src="publics/Const.js"></script>
+        <script src="publics/Options.js"></script>
+        <script src="publics/Trackers.js"></script>
+        <script src="publics/extension.js"></script>
+    </head>
+    <body>
+        <!-- DOAÇÃO PAGSEGURO -->
+        <form id="form-pagseguro" action="https://pagseguro.uol.com.br/checkout/v2/donation.html" target="_blank" method="post">
+            <input type="hidden" name="currency" value="BRL" />
+            <input type="hidden" name="receiverEmail" value="david.proweb@gmail.com" />
+        </form>
+
+        <!-- DOAÇÃO PAYPAL -->
+        <form id="form-paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+            <input type="hidden" name="cmd" value="_s-xclick">
+            <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+        </form>
+
+        <!-- MODAL DOAÇÃO -->
+        <div class="ui modal" id="modal-donate">
+            <i class="close icon"></i>
+            <div class="content">
+                Selecione a melhor opção para você fazer a doação.
+            </div>
+            <div class="actions">
+                <div class="ui right floated negative close button">Cancelar</div>
+                <div class="ui buttons">
+                    <div class="ui green button" data-form-submit="#form-pagseguro">Pagseguro</div>
+                    <div class="or" data-text="ou"></div>
+                    <div class="ui blue button" data-form-submit="#form-paypal">Paypal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL SOBRE -->
+        <div class="ui small modal" id="modal-about">
+            <i class="close icon"></i>
+            <div class="header">
+                <span data-manifest-text="name"></span>
+                <span style="font-weight: normal;" data-manifest-text="version"></span>
+            </div>
+            <div class="content">
+                <div class="ui header">
+                    <i class="user icon"></i>
+                    <div class="content">
+                        Desenvolvimento
+                        <div class="sub header">
+                            <a href="mailto:david.rodrigues@rentalhost.net" target="_blank">David Rodrigues</a>
+                            - david.rodrigues@rentalhost.net
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui header">
+                    <i class="github icon"></i>
+                    <div class="content">
+                        Código-fonte
+                        <div class="sub header">
+                            <a href="https://github.com/rentalhost/localizador-chrome" target="_blank">Github.com</a>
+                            <div style="font-size: 8pt; margin: 2px 0;">
+                                <a href="https://github.com/rentalhost/localizador-chrome/CHANGELOG" target="_blank">Histórico de versões</a>
+                                - MIT License
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui primary button">Ok</div>
+            </div>
+        </div>
+
+        <!-- MODAL REMOVE -->
+        <div class="ui small modal" id="modal-remove">
+            <i class="close icon"></i>
+            <div class="ui header">Remover</div>
+            <div class="content">
+                Deseja remover o item <strong class="tracker-title"></strong> (<span class="tracker-code"></span>) de sua lista?
+            </div>
+            <div class="actions">
+                <div class="ui red approve button">Sim</div>
+                <div class="ui primary button">Não</div>
+            </div>
+        </div>
+
+        <!-- MODAL EDITOR -->
+        <div class="ui modal" id="modal-editor">
+            <i class="close icon"></i>
+            <div class="ui header">Editor</div>
+            <div class="content">
+                <div class="ui form">
+                    <div class="ui icon error message" style="margin-bottom: 2rem;">
+                        <i class="warning sign icon"></i>
+                        <div class="content">
+                            <div class="header">Atenção</div>
+                            <ul class="error list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="required field">
+                        <label>Título de Referência</label>
+                        <input type="text" name="tracker_title" />
+                    </div>
+
+                    <div class="two fields">
+                        <div class="required field">
+                            <label>Código de Rastreio</label>
+                            <div class="ui icon input">
+                                <input type="text" name="tracker_code" />
+                                <i class="tag icon"></i>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Direção da Encomenda</label>
+                            <div class="ui selection dropdown">
+                                <input type="hidden" name="tracker_direction" />
+                                <i class="dropdown icon"></i>
+                                <div class="text"></div>
+                                <div class="menu">
+                                    <div class="item" data-value="sending">
+                                        <i class="arrow right icon"></i>
+                                        Enviando
+                                    </div>
+                                    <div class="item" data-value="receiving">
+                                        <i class="arrow left icon"></i>
+                                        Recebendo
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Observações</label>
+                        <textarea name="tracker_obs"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui close button">Cancelar</div>
+                <div class="ui primary approve button">Salvar</div>
+            </div>
+        </div>
+
+        <!-- MODEL LOADING -->
+        <div class="ui hide" id="model-loading">
+            <i class="circular location arrow loading icon"></i>
+            Verificando...
+        </div>
+
+        <!-- APLICAÇÃO -->
+        <div class="ui stackable page grid">
+            <div class="row">
+                <div class="column">
+                    <div class="ui block header">
+                        <div class="ui left floated logo image"></div>
+                        <div class="content">
+                            <span data-manifest-text="name"></span>
+                            <div class="sub header" data-manifest-text="description"></div>
+                        </div>
+                    </div>
+
+                    <div class="ui tiered red menu">
+                        <div class="menu">
+                            <div class="active item">
+                                <i class="location arrow icon"></i>
+                                Localizadores
+                            </div>
+                            <div class="right link item" data-modal-show="#modal-about">
+                                <i class="help circle icon"></i>
+                                Sobre
+                            </div>
+                            <div class="right link item" data-modal-show="#modal-donate">
+                                <i class="bar icon"></i>
+                                Doar
+                            </div>
+                        </div>
+                        <div class="sub menu">
+                            <div class="link item" data-action-trigger="create-tracker">
+                                <i class="add circle icon"></i>
+                                Adicionar
+                            </div>
+                            <div class="link disabled item" id="trackers-refresh" data-action-trigger="update-trackers">
+                                <i class="refresh icon"></i>
+                                Atualizar
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui segment">
+                        <table id="trackers-table" class="ui small table hide" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th class="collapsing" style="max-width: 150px;">Código</th>
+                                    <th>Referência</th>
+                                    <th class="center aligned" style="width: 150px;">Última movimentação</th>
+                                    <th style="width: 250px;">Situação</th>
+                                    <th style="width: 135px;">&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="trackers-model" class="ui hide" style="height: 44px;">
+                                    <td class="collapsing">
+                                        <i class="arrow icon" data-name="direction"></i>
+                                        <a class="link" data-name="code"></a>
+                                    </td>
+                                    <td>
+                                        <strong data-name="title"></strong><br />
+                                        <small data-name="placeFrom"></small>
+                                    </td>
+                                    <td class="collapsing center aligned" data-name="date">-</td>
+                                    <td class="collapsing">
+                                        <span data-name="description" data-tracker-description="default"></span><br />
+                                        <small data-name="placeDestiny"></small>
+                                    </td>
+                                    <td class="collapsing">
+                                        <i data-content="Atualizar" data-action-trigger="refresh-tracker" data-name="actionRefresh" class="link large refresh icon low opacity disabled"></i>
+                                        <i data-content="Ampliar" class="link large zoom icon low opacity"></i>
+                                        <i data-content="Editar" data-action-trigger="edit-tracker" class="link large write icon low opacity"></i>
+                                        <i data-content="Remover" data-action-trigger="remove-tracker" class="link large trash red icon low opacity"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="margin: 2rem 0;" id="trackers-empty">
+                            <div class="ui icon header">
+                                <i class="location arrow icon"></i>
+                                <div class="content">
+                                    Localizador de Encomendas
+                                    <div class="sub header">
+                                        Não há nenhum <strong>Código de Rastreio</strong> adicionado.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ui center aligned">
+                                <a class="link" data-action-trigger="create-tracker">
+                                    <i class="add circle icon"></i>
+                                    Adicionar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,85 @@
+body {
+    cursor: default;
+    padding-top: 0.1rem;
+}
+
+/** CUSTOM UI */
+.ui.menu {
+    overflow: hidden;
+}
+
+.ui.menu .sub.menu .link.item {
+    color: #000FA6;
+}
+.ui.menu .sub.menu .link.item:hover {
+    color: #EF2C2C;
+}
+
+.ui.menu .sub.menu .link.disabled.item {
+    color: rgba(0, 0, 0, 0.4);
+    cursor: inherit;
+}
+
+.ui.hide {
+    display: none;
+}
+
+.ui.logo.image {
+    background: url("images/icon-48.png") center center no-repeat;
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+}
+
+.ui.table [data-tracker-description] {
+    font-weight: bold;
+}
+.ui.table [data-tracker-description="loading"] {
+    color: rgba(0, 0, 0, 0.4);
+}
+.ui.table [data-tracker-description="loading"] i.icon {
+    color: black;
+}
+.ui.table [data-tracker-description="positive"] {
+    color: #0CBB00;
+}
+.ui.table [data-tracker-description="negative"] {
+    color: #BB0C00;
+}
+
+.ui.table tr:not(:hover) td .low.opacity {
+    opacity: 0.05 !important;
+}
+
+.ui.center.aligned {
+    text-align: center;
+}
+
+.link {
+    cursor: pointer;
+}
+
+i.icon.link.disabled,
+i.icon.link.disabled:hover {
+    cursor: inherit;
+    opacity: 0.05 !important;
+}
+
+.ui.form input[type=password]:focus,
+.ui.form input[type=text]:focus,
+.ui.form textarea:focus {
+    border-color: rgba(39, 41, 43, 0.2);
+    box-shadow: 0 0 4px 0 rgba(0,0,0,.08)
+}
+.ui.form input[type=password]:hover,
+.ui.form input[type=text]:hover,
+.ui.form textarea:hover {
+    border-color: rgba(39, 41, 43, 0.2);
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.text.icon {
+    font-family: 'Icons';
+    speak: none;
+    font-smoothing: antialiased;
+}
