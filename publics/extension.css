@@ -77,9 +77,3 @@ i.icon.link.disabled:hover {
     border-color: rgba(39, 41, 43, 0.2);
     box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.05);
 }
-
-.text.icon {
-    font-family: 'Icons';
-    speak: none;
-    font-smoothing: antialiased;
-}

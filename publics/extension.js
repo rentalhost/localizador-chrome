@@ -18,15 +18,15 @@ $(function() {
     };
 
     // Cria um Tracker.
-    Trackers.create = function(tracker) {
-        Trackers.add(tracker);
+    Trackers.listCreate = function(tracker) {
+        Trackers.listAdd(tracker);
         Trackers.save(tracker, function() {
-            Trackers.refresh(tracker.code);
+            Trackers.listRefresh(tracker.code);
         });
     };
 
     // Adiciona um novo Tracker a lista.
-    Trackers.add = function(tracker) {
+    Trackers.listAdd = function(tracker) {
         var model;
 
         // Gera o objeto e anexa a lista.
@@ -35,12 +35,12 @@ $(function() {
         model.appendTo(trackers_list);
 
         // Atualiza as informações do objeto adicionado.
-        Trackers.update(tracker);
+        Trackers.listUpdate(tracker);
         Trackers.redrawInterface();
     };
 
     // Atualiza as informações de um Tracker na lista.
-    Trackers.update = function(tracker) {
+    Trackers.listUpdate = function(tracker) {
         Trackers.getModel(tracker.code, function(model) {
             var model_mapper  = Utils.fieldsMapper(model[0], "data-name");
 
@@ -89,7 +89,7 @@ $(function() {
     };
 
     // Remove um Tracker.
-    Trackers.remove = function(tracker_code) {
+    Trackers.listRemove = function(tracker_code) {
         Trackers.getModel(tracker_code, function(model) {
             model.remove();
             Trackers.redrawInterface();
@@ -97,16 +97,16 @@ $(function() {
     };
 
     // Recarrega a lista de Trackers.
-    Trackers.reload = function() {
+    Trackers.listReload = function() {
         Trackers.getAll(function(trackers) {
             jQuery.each(trackers, function(index, tracker) {
-                Trackers.add(tracker);
+                Trackers.listAdd(tracker);
             });
         });
     };
 
     // Atualiza um Tracker.
-    Trackers.refresh = function(tracker_code) {
+    Trackers.listRefresh = function(tracker_code) {
         Trackers.getModel(tracker_code, function(tracker_model) {
             // Mapeia o Tracker da Lista.
             var tracker_mapper = Utils.fieldsMapper(tracker_model, "data-name");
@@ -192,7 +192,7 @@ $(function() {
                 }
             }
 
-            Trackers.refresh(tracker_refresh.closest("tr").attr("data-tracker-code"));
+            Trackers.listRefresh(tracker_refresh.closest("tr").attr("data-tracker-code"));
         };
 
         // Atualiza todos os Trackers na lista.
@@ -295,14 +295,14 @@ $(function() {
 
                         // Adiciona o Tracker na lista, no modo criação.
                         if(mode_create) {
-                            Trackers.add(tracker);
+                            Trackers.listAdd(tracker);
                         }
 
                         // Salva o Tracker.
                         Trackers.save(tracker_code, tracker, function() {
                             // Na criação, obtém as informações do Tracker.
                             if(mode_create) {
-                                Trackers.refresh(tracker.code);
+                                Trackers.listRefresh(tracker.code);
                                 return;
                             }
 
@@ -313,13 +313,13 @@ $(function() {
                                     model.attr("data-tracker-code", tracker.code);
 
                                     // Feito isso, é necessário reobter as informações do Tracker.
-                                    Trackers.refresh(tracker.code);
+                                    Trackers.listRefresh(tracker.code);
                                 });
                                 return;
                             }
 
                             // Caso contrário, apenas atualiza os dados na lista.
-                            Trackers.update(tracker);
+                            Trackers.listUpdate(tracker);
                         });
                     }
                 });
@@ -346,7 +346,7 @@ $(function() {
                             // Localiza o código na listagem e o remove.
                             jQuery.each(trackers, function(index, internal_tracker) {
                                 if(tracker.code === internal_tracker.code) {
-                                    Trackers.remove(internal_tracker.code);
+                                    Trackers.listRemove(internal_tracker.code);
                                     trackers = trackers.slice(0, index).concat(trackers.slice(index + 1));
                                     return false;
                                 }
@@ -394,7 +394,7 @@ $(function() {
         if(message.action === "extension.setTrackerEvents") {
             // Se houve sucesso, atualiza com os dados obtidos.
             if(message.success) {
-                Trackers.update(message.data);
+                Trackers.listUpdate(message.data);
                 return;
             }
 
@@ -423,6 +423,6 @@ $(function() {
     });
 
     // Carrega a lista de trackers.
-    Trackers.reload();
+    Trackers.listReload();
 
 });
