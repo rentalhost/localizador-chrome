@@ -35,57 +35,59 @@ $(function() {
         model.appendTo(trackers_list);
 
         // Atualiza as informações do objeto adicionado.
-        Trackers.listUpdate(tracker);
+        Trackers.listUpdate([ tracker ]);
         Trackers.redrawInterface();
     };
 
     // Atualiza as informações de um Tracker na lista.
-    Trackers.listUpdate = function(tracker) {
-        Trackers.getModel(tracker.code, function(model) {
-            var model_mapper  = Utils.fieldsMapper(model[0], "data-name");
+    Trackers.listUpdate = function(trackers) {
+        jQuery.each(trackers, function(index, tracker) {
+            Trackers.getModel(tracker.code, function(model) {
+                var model_mapper  = Utils.fieldsMapper(model[0], "data-name");
 
-            // Atualiza o modelo do Tracker.
-            model.attr({
-                "data-tracker-code"     : tracker.code,
-                "data-tracker-timestamp": Date.now()
+                // Atualiza o modelo do Tracker.
+                model.attr({
+                    "data-tracker-code"     : tracker.code,
+                    "data-tracker-timestamp": Date.now()
+                });
+
+                // Atualiza os campos.
+                $(model_mapper.code).text(tracker.code);
+                $(model_mapper.title).text(tracker.title);
+
+                // Adiciona o indicador de direção.
+                $(model_mapper.direction).removeClass("left right")
+                                         .addClass(tracker.direction === "receiving" ? "left" : "right")
+                                         .attr("title", tracker.direction === "receiving" ? "Recebendo" : "Enviando");
+
+                // Se o status do Tracker for loaded, carrega as informações adicionais.
+                if(tracker.events
+                && tracker.events.length) {
+                    var tracker_event = tracker.events[0];
+
+                    // Atualiza a Timestamp do Tracker.
+                    model.attr("data-tracker-timestamp", Utils.toTimestamp(tracker_event));
+
+                    // Preenche a localização.
+                    $(model_mapper.placeFrom).html(Trackers.getPlace(tracker_event.from) || "");
+                    $(model_mapper.placeDestiny).html(Trackers.getPlace(tracker_event.destiny) || "");
+
+                    // Preenche a data e hora.
+                    var tracker_date = tracker_event.date ? tracker_event.date + " às " + tracker_event.time : "-";
+                    $(model_mapper.date).text(tracker_date);
+
+                    // Preenche a situação atual.
+                    $(model_mapper.description).text(Trackers.getDescription(tracker_event))
+                                               .attr("data-tracker-description", Trackers.getToken(tracker_event));
+                }
+
+                // Determina o modo de atualização.
+                $(model_mapper.actionRefresh).toggleClass("disabled", !Trackers.isRefreshable(tracker_event));
             });
-
-            // Atualiza os campos.
-            $(model_mapper.code).text(tracker.code);
-            $(model_mapper.title).text(tracker.title);
-
-            // Adiciona o indicador de direção.
-            $(model_mapper.direction).removeClass("left right")
-                                     .addClass(tracker.direction === "receiving" ? "left" : "right")
-                                     .attr("title", tracker.direction === "receiving" ? "Recebendo" : "Enviando");
-
-            // Se o status do Tracker for loaded, carrega as informações adicionais.
-            if(tracker.events
-            && tracker.events.length) {
-                var tracker_event = tracker.events[0];
-
-                // Atualiza a Timestamp do Tracker.
-                model.attr("data-tracker-timestamp", Utils.toTimestamp(tracker_event));
-
-                // Preenche a localização.
-                $(model_mapper.placeFrom).html(Trackers.getPlace(tracker_event.from) || "");
-                $(model_mapper.placeDestiny).html(Trackers.getPlace(tracker_event.destiny) || "");
-
-                // Preenche a data e hora.
-                var tracker_date = tracker_event.date ? tracker_event.date + " às " + tracker_event.time : "-";
-                $(model_mapper.date).text(tracker_date);
-
-                // Preenche a situação atual.
-                $(model_mapper.description).text(Trackers.getDescription(tracker_event))
-                                           .attr("data-tracker-description", Trackers.getToken(tracker_event));
-            }
-
-            // Determina o modo de atualização.
-            $(model_mapper.actionRefresh).toggleClass("disabled", !Trackers.isRefreshable(tracker_event));
-
-            // Após a atualização, reordena a lista.
-            Trackers.reorderList();
         });
+
+        // Após a atualização, reordena a lista.
+        Trackers.reorderList();
     };
 
     // Remove um Tracker.
@@ -106,21 +108,27 @@ $(function() {
     };
 
     // Atualiza um Tracker.
-    Trackers.listRefresh = function(tracker_code) {
-        Trackers.getModel(tracker_code, function(tracker_model) {
-            // Mapeia o Tracker da Lista.
-            var tracker_mapper = Utils.fieldsMapper(tracker_model, "data-name");
+    Trackers.listRefresh = function(trackers_codes) {
+        if(!trackers_codes.length) {
+            return;
+        }
 
-            // Atualiza a situação.
-            $(tracker_mapper.placeDestiny).empty();
-            $(tracker_mapper.description)
-                .attr("data-tracker-description", "loading")
-                .html($("#model-loading").html());
+        jQuery.each(trackers_codes, function(index, tracker_code) {
+            Trackers.getModel(tracker_code, function(tracker_model) {
+                // Mapeia o Tracker da Lista.
+                var tracker_mapper = Utils.fieldsMapper(tracker_model, "data-name");
 
-            chrome.runtime.sendMessage("", {
-                "action" : "events.getTrackerEvents",
-                "tracker": tracker_model.attr("data-tracker-code")
+                // Atualiza a situação.
+                $(tracker_mapper.placeDestiny).empty();
+                $(tracker_mapper.description)
+                    .attr("data-tracker-description", "loading")
+                    .html($("#model-loading").html());
             });
+        });
+
+        chrome.runtime.sendMessage({
+            "action"  : "events.getTrackersEvents",
+            "trackers": trackers_codes
         });
     };
 
@@ -181,23 +189,34 @@ $(function() {
         };
 
         // Inicia a atualização de um Tracker.
-        this.triggerTrackerRefresh = function(ev, force_refresh) {
+        this.triggerTrackerRefresh = function(ev) {
             var tracker_refresh = $(this);
 
             // Força a atualização, mesmo quando desnecessária.
-            if(tracker_refresh.is(".disabled")) {
-                if(!force_refresh
-                && !ev.shiftKey) {
-                    return;
-                }
+            if(tracker_refresh.is(".disabled")
+            && !ev.shiftKey) {
+                return;
             }
 
-            Trackers.listRefresh(tracker_refresh.closest("tr").attr("data-tracker-code"));
+            Trackers.listRefresh([ tracker_refresh.closest("tr").attr("data-tracker-code") ]);
         };
 
         // Atualiza todos os Trackers na lista.
         this.triggerTrackersRefresh = function(ev) {
-            trackers_list.find("[data-action-trigger=refresh-tracker]").trigger("click", [ ev.shiftKey ]);
+            var trackers       = trackers_list.find("[data-action-trigger=refresh-tracker]"),
+                trackers_codes = [];
+
+            // Ignora os que não devem ser atualizados por padrão.
+            if(!ev.shiftKey) {
+                trackers = trackers.not(".disabled");
+            }
+
+            // Obtém os códigos recebidos.
+            trackers.closest("tr").each(function() {
+                trackers_codes.push(this.getAttribute("data-tracker-code"));
+            });
+
+            Trackers.listRefresh(trackers_codes);
         };
 
         // Inicia a criação de um novo Tracker.
@@ -302,7 +321,7 @@ $(function() {
                         Trackers.save(tracker_code, tracker, function() {
                             // Na criação, obtém as informações do Tracker.
                             if(mode_create) {
-                                Trackers.listRefresh(tracker.code);
+                                Trackers.listRefresh([ tracker.code ]);
                                 return;
                             }
 
@@ -313,13 +332,13 @@ $(function() {
                                     model.attr("data-tracker-code", tracker.code);
 
                                     // Feito isso, é necessário reobter as informações do Tracker.
-                                    Trackers.listRefresh(tracker.code);
+                                    Trackers.listRefresh([ tracker.code ]);
                                 });
                                 return;
                             }
 
                             // Caso contrário, apenas atualiza os dados na lista.
-                            Trackers.listUpdate(tracker);
+                            Trackers.listUpdate([ tracker ]);
                         });
                     }
                 });
@@ -391,10 +410,10 @@ $(function() {
     // Gerenciador de mensagens.
     chrome.runtime.onMessage.addListener(function(message, sender, responseCallback) {
         // Se receber os dados de um tracker.
-        if(message.action === "extension.setTrackerEvents") {
+        if(message.action === "extension.setTrackersEvents") {
             // Se houve sucesso, atualiza com os dados obtidos.
             if(message.success) {
-                Trackers.listUpdate(message.data);
+                Trackers.listUpdate(message.responses);
                 return;
             }
 
@@ -405,7 +424,7 @@ $(function() {
                 // Atualiza a situação.
                 $(tracker_mapper.description)
                     .attr("data-tracker-description", "negative")
-                    .text("Falha ao atualizar");
+                    .text("Falha ao atualizar.");
             });
             return;
         }

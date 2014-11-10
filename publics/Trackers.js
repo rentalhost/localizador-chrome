@@ -135,76 +135,96 @@ Trackers = new function() {
     };
 
     // Processa as informações de um Tracker.
-    this.compile = function(tracker_xml, tracker_code, callback) {
-        // Obtém e prepara a atualização do Tracker.
-        Trackers.get(tracker_code, function(tracker) {
-            var tracker_response = Utils.xmlMapper(tracker_xml).sroxml,
-                tracker = tracker || {};
+    this.compile = function(tracker_xml, trackers_codes, callback) {
+        var trackers_responses = Utils.xmlMapper(tracker_xml).sroxml,
+            trackers_compiled  = [];
 
-            // Define o status do Tracker.
-            tracker.status = "loaded";
+        // Atualiza cada objeto da resposta.
+        jQuery.each(trackers_codes, function(index, tracker_code) {
+            var tracker_index = false;
 
-            // Reseta os eventos do Tracker.
-            tracker.events = [];
-
-            // Objeto localizado.
-            if(tracker_response[0].objeto) {
-                jQuery.each(tracker_response[0].objeto[0].evento, function(index, tracker_event) {
-                    var tracker_data  = {};
-
-                    // Define os dados do Tracker.
-                    tracker_data.type        = tracker_event.tipo[0];
-                    tracker_data.status      = tracker_event.status[0];
-                    tracker_data.description = tracker_event.descricao[0];
-                    tracker_data.date        = tracker_event.data[0];
-                    tracker_data.time        = tracker_event.hora[0];
-
-                    // Obtém informações complementares, se houver.
-                    tracker_data.additional = {};
-                    if(tracker_event.recebedor) {
-                        tracker_data.additional.receiver = tracker_event.recebedor[0];
+            // Localiza o objeto responsável pela resposta do Tracker.
+            if(trackers_responses[0].objeto) {
+                jQuery.each(trackers_responses[0].objeto, function(response_index, response_object) {
+                    if(response_object.numero[0] === tracker_code) {
+                        tracker_index = response_index;
+                        return false;
                     }
-                    if(tracker_event.documento) {
-                        tracker_data.additional.document = tracker_event.documento[0];
-                    }
-                    if(tracker_event.comentario) {
-                        tracker_data.additional.comment  = tracker_event.comentario[0];
-                    }
-
-                    // Define o local atual.
-                    tracker_data.from = {};
-                    tracker_data.from.place = tracker_event.local[0];
-                    tracker_data.from.city  = tracker_event.cidade[0];
-                    tracker_data.from.UF    = tracker_event.uf[0];
-                    tracker_data.from.CEP   = tracker_event.codigo[0];
-
-                    // Define o local de destino.
-                    if(tracker_event.destino
-                    && tracker_event.destino[0].local) {
-                        tracker_data.destiny = {};
-                        tracker_data.destiny.place    = tracker_event.destino[0].local[0];
-                        tracker_data.destiny.city     = tracker_event.destino[0].cidade[0];
-                        tracker_data.destiny.district = tracker_event.destino[0].bairro[0];
-                        tracker_data.destiny.UF       = tracker_event.destino[0].uf[0];
-                        tracker_data.destiny.CEP      = tracker_event.destino[0].codigo[0];
-                    }
-
-                    // Adiciona um novo evento.
-                    tracker.events.push(tracker_data);
-                });
-            }
-            // Caso contrário, preenche os dados de falha.
-            else {
-                tracker.events.push({
-                    "type"       : "ER",
-                    "status"     : "01",
-                    "description": "Objeto não localizado."
                 });
             }
 
-            // Salva o Tracker e envia a responsa compilada.
-            Trackers.save(tracker.code, tracker, function() {
-                callback(tracker);
+            // Obtém e prepara a atualização do Tracker.
+            Trackers.get(tracker_code, function(tracker) {
+                var tracker = tracker || {};
+
+                // Define o status e reseta o Tracker.
+                tracker.status = "loaded";
+                tracker.events = [];
+
+                // Se o objeto foi localizado, preenche seus dados.
+                if(tracker_index !== false) {
+                    jQuery.each(trackers_responses[0].objeto[tracker_index].evento, function(index, tracker_event) {
+                        var tracker_data  = {};
+
+                        // Define os dados do Tracker.
+                        tracker_data.type        = tracker_event.tipo[0];
+                        tracker_data.status      = tracker_event.status[0];
+                        tracker_data.description = tracker_event.descricao[0];
+                        tracker_data.date        = tracker_event.data[0];
+                        tracker_data.time        = tracker_event.hora[0];
+
+                        // Obtém informações complementares, se houver.
+                        tracker_data.additional = {};
+                        if(tracker_event.recebedor) {
+                            tracker_data.additional.receiver = tracker_event.recebedor[0];
+                        }
+                        if(tracker_event.documento) {
+                            tracker_data.additional.document = tracker_event.documento[0];
+                        }
+                        if(tracker_event.comentario) {
+                            tracker_data.additional.comment  = tracker_event.comentario[0];
+                        }
+
+                        // Define o local atual.
+                        tracker_data.from = {};
+                        tracker_data.from.place = tracker_event.local[0];
+                        tracker_data.from.city  = tracker_event.cidade[0];
+                        tracker_data.from.UF    = tracker_event.uf[0];
+                        tracker_data.from.CEP   = tracker_event.codigo[0];
+
+                        // Define o local de destino.
+                        if(tracker_event.destino
+                        && tracker_event.destino[0].local) {
+                            tracker_data.destiny = {};
+                            tracker_data.destiny.place    = tracker_event.destino[0].local[0];
+                            tracker_data.destiny.city     = tracker_event.destino[0].cidade[0];
+                            tracker_data.destiny.district = tracker_event.destino[0].bairro[0];
+                            tracker_data.destiny.UF       = tracker_event.destino[0].uf[0];
+                            tracker_data.destiny.CEP      = tracker_event.destino[0].codigo[0];
+                        }
+
+                        // Adiciona um novo evento.
+                        tracker.events.push(tracker_data);
+                    });
+                }
+                // Caso contrário, preenche os dados de falha.
+                else {
+                    tracker.events.push({
+                        "type"       : "ER",
+                        "status"     : "01",
+                        "description": "Objeto não localizado."
+                    });
+                }
+
+                // Anexa os compilados.
+                trackers_compiled.push(tracker);
+
+                // Salva o Tracker e envia as informações geradas.
+                Trackers.save(tracker.code, tracker, function() {
+                    if(trackers_compiled.length === trackers_codes.length) {
+                        callback(trackers_compiled);
+                    }
+                });
             });
         });
     };
