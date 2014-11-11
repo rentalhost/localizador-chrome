@@ -27,16 +27,16 @@ Utils = new function() {
 
     // Converte data e hora em Timestamp.
     this.toTimestamp = function(tracker_event) {
-        // Em caso de erro, retorna o Timestamp atual.
+        // Em caso de erro, retornará nada.
         if(tracker_event.type === "ER") {
-            return Date.now();
+            return;
         }
 
         // Caso contrário, retorna o Timestamp.
         var date_reformat = tracker_event.date.split("/"),
             time_reformat = tracker_event.time.split(":");
 
-        return (new Date(date_reformat[2], date_reformat[1], date_reformat[0], time_reformat[0], time_reformat[1])).getTime();
+        return (new Date(date_reformat[2], parseInt(date_reformat[1]) - 1, date_reformat[0], time_reformat[0], time_reformat[1])).getTime();
     };
 
     // Converte XML para JSON.

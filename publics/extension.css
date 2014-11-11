@@ -31,20 +31,8 @@ body {
     height: 40px;
 }
 
-.ui.table [data-tracker-description] {
+.ui.table .description {
     font-weight: bold;
-}
-.ui.table [data-tracker-description="loading"] {
-    color: rgba(0, 0, 0, 0.4);
-}
-.ui.table [data-tracker-description="loading"] i.icon {
-    color: black;
-}
-.ui.table [data-tracker-description="positive"] {
-    color: #0CBB00;
-}
-.ui.table [data-tracker-description="negative"] {
-    color: #BB0C00;
 }
 
 .ui.table tr:not(:hover) td .low.opacity {

@@ -49,7 +49,7 @@ $(function() {
                 model.attr({
                     "data-tracker-code"     : tracker.code,
                     "data-tracker-timestamp": Date.now()
-                });
+                }).removeClass("negative positive");
 
                 // Atualiza os campos.
                 $(model_mapper.code).text(tracker.code);
@@ -67,6 +67,7 @@ $(function() {
 
                     // Atualiza a Timestamp do Tracker.
                     model.attr("data-tracker-timestamp", Utils.toTimestamp(tracker_event));
+                    model.addClass(Trackers.getToken(tracker_event));
 
                     // Preenche a localização.
                     $(model_mapper.placeFrom).html(Trackers.getPlace(tracker_event.from) || "");
@@ -77,17 +78,13 @@ $(function() {
                     $(model_mapper.date).text(tracker_date);
 
                     // Preenche a situação atual.
-                    $(model_mapper.description).text(Trackers.getDescription(tracker_event))
-                                               .attr("data-tracker-description", Trackers.getToken(tracker_event));
+                    $(model_mapper.description).text(Trackers.getDescription(tracker_event));
                 }
 
                 // Determina o modo de atualização.
                 $(model_mapper.actionRefresh).toggleClass("disabled", !Trackers.isRefreshable(tracker_event));
             });
         });
-
-        // Após a atualização, reordena a lista.
-        Trackers.reorderList();
     };
 
     // Remove um Tracker.
@@ -104,6 +101,7 @@ $(function() {
             jQuery.each(trackers, function(index, tracker) {
                 Trackers.listAdd(tracker);
             });
+            Trackers.reorderList();
         });
     };
 
@@ -119,10 +117,9 @@ $(function() {
                 var tracker_mapper = Utils.fieldsMapper(tracker_model, "data-name");
 
                 // Atualiza a situação.
+                tracker_model.removeClass("positive negative");
                 $(tracker_mapper.placeDestiny).empty();
-                $(tracker_mapper.description)
-                    .attr("data-tracker-description", "loading")
-                    .html($("#model-loading").html());
+                $(tracker_mapper.description).html($("#model-loading").html());
             });
         });
 
@@ -130,6 +127,9 @@ $(function() {
             "action"  : "events.getTrackersEvents",
             "trackers": trackers_codes
         });
+
+        // Após a atualização, reordena a lista.
+        Trackers.reorderList();
     };
 
     // Redesenha a interface.
@@ -141,29 +141,14 @@ $(function() {
 
         trackers_refresh.toggleClass("disabled", !trackers_exists);
 
-        this.reorderList();
+        Trackers.reorderList();
     };
 
     // Reordena a lista com base na data de movimentação.
     Trackers.reorderList = function() {
-        var model_list    = trackers_list.children(),
-            model_reorder = [];
-
-        // Destaca todos os itens da lista.
-        model_list.each(function() {
-            var model = $(this);
-            model_reorder.push([ parseInt(model.attr("data-tracker-timestamp")), model.detach() ]);
-        });
-
-        // Reordena o array.
-        model_reorder.sort(function(a, b) {
-            return a[0] < b[0];
-        });
-
-        // Reanexa os itens na nova ordem.
-        jQuery.each(model_reorder, function(index, value) {
-            trackers_list.append(value[1]);
-        });
+        trackers_list.find("tr").sort(function(a, b) {
+            return parseInt(a.getAttribute("data-tracker-timestamp")) > parseInt(b.getAttribute("data-tracker-timestamp")) ? -1 : 1;
+        }).appendTo(trackers_list);
     };
 
     // Gerencia as ações e eventos.
@@ -226,125 +211,133 @@ $(function() {
 
         // Inicia a edição de um Tracker.
         this.triggerTrackerEditModalShow = function(ev, tracker_code) {
-            // Carrega o Tracker.
-            Trackers.get(tracker_code, function(tracker) {
-                // Identifica o modo.
-                var mode_create = tracker === null,
-                    modal_editor;
+            Trackers.getAllCodes(function(trackers_codes) {
+                // Carrega o Tracker.
+                Trackers.get(tracker_code, function(tracker) {
+                    // Identifica o modo.
+                    var mode_create = tracker === null,
+                        modal_editor;
 
-                // No modo de criação, gera um Tracker vazio.
-                if(mode_create) {
-                    tracker = { "status": "created" };
-                }
-
-                // Prepara o Modal.
-                modal_editor = $("#modal-editor");
-                modal_editor.find(".header").text(mode_create ? "Novo" : "Editando \"" + tracker.title + "\"");
-
-                // Reinicia a visualização do modal.
-                function modal_reset() {
-                    modal_editor.find(".message").removeClass("visible")
-                                .find("ul").empty();
-                };
-
-                // Configura o Modal.
-                modal_editor.modal("setting", {
-                    // Configuração na exibição inicial.
-                    "onShow": function() {
-                        var modal_fields;
-
-                        // Reseta o modal.
-                        modal_reset();
-
-                        // Preenche os campos.
-                        modal_fields = Utils.fieldsMapper(this);
-                        modal_fields.tracker_title.value     = tracker.title     || "";
-                        modal_fields.tracker_code.value      = tracker.code      || "";
-                        modal_fields.tracker_direction.value = tracker.direction || "receiving";
-                        modal_fields.tracker_obs.value       = tracker.obs       || "";
-
-                        // Determina a direção da encomenda.
-                        $(modal_fields.tracker_direction).parent()
-                            .dropdown("set selected", modal_fields.tracker_direction.value);
-                    },
-                    // Valida a aprovação de um item.
-                    "onApprove": function() {
-                        var modal = $(this),
-                            modal_messages = modal.find(".message"),
-                            modal_messages_list = modal_messages.find("ul");
-                            modal_fields = Utils.fieldsMapper(this);
-
-                        // Reseta o modal.
-                        modal_reset();
-
-                        // O Título de Referência é obrigatório.
-                        modal_fields.tracker_title.value = modal_fields.tracker_title.value.trim();
-                        if(modal_fields.tracker_title.value.length === 0) {
-                            modal_messages_list.append("<li class=\"item\">O campo <strong>Título de Referência</strong> é obrigatório.</li>");
-                        }
-
-                        // O Código de Rastreio é obrigatório.
-                        modal_fields.tracker_code.value = modal_fields.tracker_code.value.toUpperCase().replace(/[^A-Z0-9]/g, "").trim();
-                        if(modal_fields.tracker_code.value.length === 0) {
-                            modal_messages_list.append("<li class=\"item\">O campo <strong>Código de Rastreio</strong> é obrigatório.</li>");
-                        }
-                        else
-                        // O Código de Rastreio deve ter 13 caracteres.
-                        if(modal_fields.tracker_code.value.length !== 13) {
-                            modal_messages_list.append("<li class=\"item\">O campo <strong>Código de Rastreio</strong> deve ter 13 caracteres.</li>");
-                        }
-                        else
-                        // O Código de Rastreio deve possuir um formato válido.
-                        if(!modal_fields.tracker_code.value.match(/^[A-Z]{2}[0-9]{9}[A-Z]{2}$/)) {
-                            modal_messages_list.append("<li class=\"item\">O campo <strong>Código de Rastreio</strong> deve possuir um formato válido (ex. SX000000000BR).</li>");
-                        }
-
-                        // Identifica se houve um erro.
-                        if(modal_messages_list.find("li").length !== 0) {
-                            modal_messages.addClass("visible");
-                            modal.modal("refresh");
-                            return false;
-                        }
-
-                        // Define os dados do Tracker.
-                        tracker.code         = modal_fields.tracker_code.value;
-                        tracker.title        = modal_fields.tracker_title.value;
-                        tracker.direction    = modal_fields.tracker_direction.value;
-                        tracker.obs          = modal_fields.tracker_obs.value;
-
-                        // Adiciona o Tracker na lista, no modo criação.
-                        if(mode_create) {
-                            Trackers.listAdd(tracker);
-                        }
-
-                        // Salva o Tracker.
-                        Trackers.save(tracker_code, tracker, function() {
-                            // Na criação, obtém as informações do Tracker.
-                            if(mode_create) {
-                                Trackers.listRefresh([ tracker.code ]);
-                                return;
-                            }
-
-                            // Na edição, verifica se o código foi alterado.
-                            if(tracker.code !== tracker_code) {
-                                // Se isso ocorreu, é necessário atualizar o código do modelo.
-                                Trackers.getModel(tracker_code, function(model) {
-                                    model.attr("data-tracker-code", tracker.code);
-
-                                    // Feito isso, é necessário reobter as informações do Tracker.
-                                    Trackers.listRefresh([ tracker.code ]);
-                                });
-                                return;
-                            }
-
-                            // Caso contrário, apenas atualiza os dados na lista.
-                            Trackers.listUpdate([ tracker ]);
-                        });
+                    // No modo de criação, gera um Tracker vazio.
+                    if(mode_create) {
+                        tracker = { "status": "created" };
                     }
-                });
 
-                // Exibe o Modal.
-                modal_editor.modal("show");
+                    // Prepara o Modal.
+                    modal_editor = $("#modal-editor");
+                    modal_editor.find(".header").text(mode_create ? "Novo" : "Editando \"" + tracker.title + "\"");
+
+                    // Reinicia a visualização do modal.
+                    function modal_reset() {
+                        modal_editor.find(".message").removeClass("visible")
+                                    .find("ul").empty();
+                    };
+
+                    // Configura o Modal.
+                    modal_editor.modal("setting", {
+                        // Configuração na exibição inicial.
+                        "onShow": function() {
+                            var modal_fields;
+
+                            // Reseta o modal.
+                            modal_reset();
+
+                            // Preenche os campos.
+                            modal_fields = Utils.fieldsMapper(this);
+                            modal_fields.tracker_title.value     = tracker.title     || "";
+                            modal_fields.tracker_code.value      = tracker.code      || "";
+                            modal_fields.tracker_direction.value = tracker.direction || "receiving";
+                            modal_fields.tracker_obs.value       = tracker.obs       || "";
+
+                            // Determina a direção da encomenda.
+                            $(modal_fields.tracker_direction).parent()
+                                .dropdown("set selected", modal_fields.tracker_direction.value);
+                        },
+                        // Valida a aprovação de um item.
+                        "onApprove": function() {
+                            var modal = $(this),
+                                modal_messages = modal.find(".message"),
+                                modal_messages_list = modal_messages.find("ul");
+                                modal_fields = Utils.fieldsMapper(this);
+
+                            // Reseta o modal.
+                            modal_reset();
+
+                            // O Título de Referência é obrigatório.
+                            modal_fields.tracker_title.value = modal_fields.tracker_title.value.trim();
+                            if(modal_fields.tracker_title.value.length === 0) {
+                                modal_messages_list.append("<li class=\"item\">O campo <strong>Título de Referência</strong> é obrigatório.</li>");
+                            }
+
+                            // O Código de Rastreio é obrigatório.
+                            modal_fields.tracker_code.value = modal_fields.tracker_code.value.toUpperCase().replace(/[^A-Z0-9]/g, "").trim();
+                            if(modal_fields.tracker_code.value.length === 0) {
+                                modal_messages_list.append("<li class=\"item\">O campo <strong>Código de Rastreio</strong> é obrigatório.</li>");
+                            }
+                            else
+                            // O Código de Rastreio deve ter 13 caracteres.
+                            if(modal_fields.tracker_code.value.length !== 13) {
+                                modal_messages_list.append("<li class=\"item\">O campo <strong>Código de Rastreio</strong> deve ter 13 caracteres.</li>");
+                            }
+                            else
+                            // O Código de Rastreio deve possuir um formato válido.
+                            if(!modal_fields.tracker_code.value.match(/^[A-Z]{2}[0-9]{9}[A-Z]{2}$/)) {
+                                modal_messages_list.append("<li class=\"item\">O campo <strong>Código de Rastreio</strong> deve possuir um formato válido (ex. SX000000000BR).</li>");
+                            }
+                            else
+                            // O Código de Rastreio já existe.
+                            if(trackers_codes.indexOf(modal_fields.tracker_code.value) !== -1
+                            && tracker_code !== modal_fields.tracker_code.value) {
+                                modal_messages_list.append("<li class=\"item\">O <strong>Código de Rastreio</strong> informado já foi cadastrado.</li>");
+                            }
+
+                            // Identifica se houve um erro.
+                            if(modal_messages_list.find("li").length !== 0) {
+                                modal_messages.addClass("visible");
+                                modal.modal("refresh");
+                                return false;
+                            }
+
+                            // Define os dados do Tracker.
+                            tracker.code         = modal_fields.tracker_code.value;
+                            tracker.title        = modal_fields.tracker_title.value;
+                            tracker.direction    = modal_fields.tracker_direction.value;
+                            tracker.obs          = modal_fields.tracker_obs.value;
+
+                            // Adiciona o Tracker na lista, no modo criação.
+                            if(mode_create) {
+                                Trackers.listAdd(tracker);
+                            }
+
+                            // Salva o Tracker.
+                            Trackers.save(tracker_code, tracker, function() {
+                                // Na criação, obtém as informações do Tracker.
+                                if(mode_create) {
+                                    Trackers.listRefresh([ tracker.code ]);
+                                    return;
+                                }
+
+                                // Na edição, verifica se o código foi alterado.
+                                if(tracker.code !== tracker_code) {
+                                    // Se isso ocorreu, é necessário atualizar o código do modelo.
+                                    Trackers.getModel(tracker_code, function(model) {
+                                        model.attr("data-tracker-code", tracker.code);
+
+                                        // Feito isso, é necessário reobter as informações do Tracker.
+                                        Trackers.listRefresh([ tracker.code ]);
+                                    });
+                                    return;
+                                }
+
+                                // Caso contrário, apenas atualiza os dados na lista.
+                                Trackers.listUpdate([ tracker ]);
+                            });
+                        }
+                    });
+
+                    // Exibe o Modal.
+                    modal_editor.modal("show");
+                });
             });
         };
 
@@ -422,9 +415,8 @@ $(function() {
                 var tracker_mapper      = Utils.fieldsMapper(model, "data-name");
 
                 // Atualiza a situação.
-                $(tracker_mapper.description)
-                    .attr("data-tracker-description", "negative")
-                    .text("Falha ao atualizar.");
+                model.removeClass("positive negative");
+                $(tracker_mapper.description).text("Falha ao atualizar.");
             });
             return;
         }
