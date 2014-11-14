@@ -7,6 +7,11 @@ $(function() {
         trackers_refresh = $("#trackers-refresh"),
         trackers_list    = trackers_model.parent();
 
+    // Define uma referência do próximo dia.
+    var current_timestamp = new Date;
+    current_timestamp.setDate(current_timestamp.getDate() + 1);
+    current_timestamp.setHours(0, 0, 0, 0);
+
     // Desanexa o Tracker de modelo da página.
     trackers_model.detach().removeClass("hide");
 
@@ -48,7 +53,7 @@ $(function() {
                 // Atualiza o modelo do Tracker.
                 model.attr({
                     "data-tracker-code"     : tracker.code,
-                    "data-tracker-timestamp": Date.now()
+                    "data-tracker-timestamp": current_timestamp.getTime()
                 }).removeClass("negative positive");
 
                 // Atualiza os campos.
@@ -66,7 +71,7 @@ $(function() {
                     var tracker_event = tracker.events[0];
 
                     // Atualiza a Timestamp do Tracker.
-                    model.attr("data-tracker-timestamp", Utils.toTimestamp(tracker_event));
+                    model.attr("data-tracker-timestamp", Utils.toTimestamp(tracker_event) || current_timestamp.getTime());
                     model.addClass(Trackers.getToken(tracker_event));
 
                     // Preenche a localização.
@@ -146,9 +151,14 @@ $(function() {
 
     // Reordena a lista com base na data de movimentação.
     Trackers.reorderList = function() {
-        trackers_list.find("tr").sort(function(a, b) {
-            return parseInt(a.getAttribute("data-tracker-timestamp")) > parseInt(b.getAttribute("data-tracker-timestamp")) ? -1 : 1;
-        }).appendTo(trackers_list);
+        trackers_list.find("tr").sort(
+            firstBy(function(a, b) {
+                return b.getAttribute("data-tracker-timestamp") - a.getAttribute("data-tracker-timestamp");
+            })
+            .thenBy(function(a, b) {
+                return a.getAttribute("data-tracker-code") > b.getAttribute("data-tracker-code") ? 1 : -1;
+            })
+        ).appendTo(trackers_list);
     };
 
     // Gerencia as ações e eventos.
