@@ -3,12 +3,13 @@ $(function() {
     // Mapeia os principais elementos.
     var trackers_table   = $("#trackers-table"),
         trackers_empty   = $("#trackers-empty"),
-        trackers_model   = $("#trackers-model"),
+        trackers_model   = $("#trackers-model").removeAttr("id"),
         trackers_refresh = $("#trackers-refresh"),
         trackers_list    = trackers_model.parent();
 
     // Elementos de detalhes.
-    var details_model    = $("#trackers-details-model").detach();
+    var details_model      = $("#trackers-details-model").removeAttr("id").detach(),
+        details_more_model = $("[data-name^=trackers-details-more-model]").detach();
 
     // Define uma referência do próximo dia.
     var current_timestamp = new Date;
@@ -380,8 +381,32 @@ $(function() {
                     $(movement_mapper.description).text(movement_properties.description);
                     movement_element.addClass(movement_properties.pole);
 
+                    // Adiciona um ícone indicando a posição atual.
+                    if(index === 0) {
+                        var current_icon = document.createElement("i");
+                        current_icon.classList.add("small", "chevron", "right", "icon");
+                        $(movement_mapper.placeFrom).prepend(current_icon);
+                    }
+                    else
+                    // A partir do quinto objeto, oculta os registros.
+                    if(index >= 5
+                    && tracker.events.length > 6) {
+                        movement_element.addClass("hide").hide();
+                    }
+
                     movement_element.appendTo(modal_movements);
                 });
+
+                // Se possuir mais do que cinco itens, exibe uma opção de exibir todos.
+                if(tracker.events.length > 6) {
+                    var more_element = details_more_model.clone();
+                    more_element.click(function() {
+                        modal_movements.find(".hide").show();
+                        $(this).closest("tr").remove();
+                        return false;
+                    });
+                    more_element.appendTo(modal_movements);
+                }
 
                 modal_details.modal("show");
             });
@@ -461,7 +486,7 @@ $(function() {
 
             // Se não houve sucesso, exibe uma mensagme de erro.
             Trackers.getModel(message.tracker, function(model) {
-                var tracker_mapper      = Utils.fieldsMapper(model, "data-name");
+                var tracker_mapper = Utils.fieldsMapper(model, "data-name");
 
                 // Atualiza a situação.
                 model.removeClass("positive negative");

@@ -180,7 +180,7 @@
             <div class="ui header">Detalhes</div>
             <div class="content">
                 <div class="ui header">
-                    Movimentações
+                    Histórico de Movimentações
                 </div>
                 <table class="ui table tracker movements">
                     <thead>
@@ -191,7 +191,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr id="trackers-details-model">
+                        <tr id="trackers-details-model" style="height: 56px;">
                             <td data-name="timing"></td>
                             <td>
                                 <strong data-name="placeFrom"></strong>
@@ -199,6 +199,11 @@
                             <td>
                                 <strong data-name="description"></strong><br />
                                 <small data-name="placeDestiny"></small>
+                            </td>
+                        </tr>
+                        <tr data-name="trackers-details-more-model-bottom">
+                            <td colspan="3" style="text-align: center;">
+                                <strong><a class="link">Mais</a></strong>
                             </td>
                         </tr>
                     </tbody>
