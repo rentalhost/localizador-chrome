@@ -49,8 +49,7 @@ Trackers = new function() {
     // Obtém todas as propriedades de um evento.
     this.getEventProperties = function(tracker_event) {
         // Define o tipo compacto do evento.
-        var tracker_event       = tracker_event || {},
-            tracker_type        = tracker_event.type.substr(0, 2) + tracker_event.status,
+        var tracker_type        = tracker_event.type.substr(0, 2) + tracker_event.status,
             tracker_pole        = null,
             tracker_description = token_alternatives[tracker_event.description] || tracker_event.description;
 
@@ -72,12 +71,14 @@ Trackers = new function() {
 
         // Retorna as propriedades coletadas.
         return {
-            "isRefreshable": !tracker_event || token_unrefreshable.indexOf(tracker_type) === -1,
-            "pole"         : tracker_pole,
-            "description"  : tracker_description,
-            "timing"       : tracker_event.date ? tracker_event.date + " às " + tracker_event.time : null,
-            "placeFrom"    : Trackers.parsePlace(tracker_event.from) || "",
-            "placeDestiny" : Trackers.parsePlace(tracker_event.destiny) || "",
+            "type"               : tracker_type,
+            "isRefreshable"      : !tracker_event || token_unrefreshable.indexOf(tracker_type) === -1,
+            "pole"               : tracker_pole,
+            "description"        : tracker_description,
+            "originalDescription": tracker_event.description,
+            "timing"             : tracker_event.date ? tracker_event.date + " às " + tracker_event.time : null,
+            "placeFrom"          : Trackers.parsePlace(tracker_event.from) || "",
+            "placeDestiny"       : Trackers.parsePlace(tracker_event.destiny) || "",
         };
     };
 
@@ -126,11 +127,12 @@ Trackers = new function() {
     // Processa as informações de um Tracker.
     this.compile = function(tracker_xml, trackers_codes, callback) {
         var trackers_responses = Utils.xmlMapper(tracker_xml).sroxml,
-            trackers_compiled  = [];
+            trackers_compiled  = [],
+            trackers_processed = 0;
 
         // Atualiza cada objeto da resposta.
         jQuery.each(trackers_codes, function(index, tracker_code) {
-            var tracker_index = false;
+            var tracker_index     = false;
 
             // Localiza o objeto responsável pela resposta do Tracker.
             if(trackers_responses[0].objeto) {
@@ -144,7 +146,8 @@ Trackers = new function() {
 
             // Obtém e prepara a atualização do Tracker.
             Trackers.get(tracker_code, function(tracker) {
-                var tracker = tracker || {};
+                var tracker              = tracker || {},
+                    tracker_events_count = tracker.events ? tracker.events.length : 0;
 
                 // Define o status e reseta o Tracker.
                 tracker.status = "loaded";
@@ -201,16 +204,20 @@ Trackers = new function() {
                     tracker.events.push({
                         "type"       : "ER",
                         "status"     : "01",
-                        "description": "Objeto não localizado."
+                        "description": "Objeto não localizado"
                     });
                 }
+
+                // Define se um tracker foi atualizado.
+                tracker.updated = tracker.updated || tracker.events.length !== tracker_events_count;
 
                 // Anexa os compilados.
                 trackers_compiled.push(tracker);
 
                 // Salva o Tracker e envia as informações geradas.
                 Trackers.save(tracker.code, tracker, function() {
-                    if(trackers_compiled.length === trackers_codes.length) {
+                    trackers_processed++;
+                    if(trackers_processed === trackers_codes.length) {
                         callback(trackers_compiled);
                     }
                 });

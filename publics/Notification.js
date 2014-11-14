@@ -1,5 +1,5 @@
 // Helper de Notificações.
-var Chrome_Notification = new function() {
+var Notification = new function() {
     // Armazena as opções originais.
     var original_options = {};
 
@@ -19,9 +19,9 @@ var Chrome_Notification = new function() {
     // Cria uma nova notificação.
     this.create = function(options) {
         // Definições padrões.
-        options.type        = options.type || "basic";
-        options.title       = options.title || chrome.runtime.getManifest().name;
-        options.iconUrl     = options.iconUrl || chrome.runtime.getManifest().icons["80"];
+        options.type        = options.type        || "basic";
+        options.title       = options.title       || chrome.runtime.getManifest().name;
+        options.iconUrl     = options.iconUrl     || "publics/images/icon-tracker-default.png";
         options.isClickable = options.isClickable || !!options["callback.clicked"];
 
         // Armazena as opções originais.

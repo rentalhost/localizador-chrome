@@ -11,13 +11,13 @@
         "http://*.correios.com.br/*",
         "notifications",
         "storage",
+        "alarms",
         "idle"
     ],
 
     "icons": {
         "16" : "publics/images/icon-16.png",
         "48" : "publics/images/icon-48.png",
-        "80" : "publics/images/icon-80.png",
         "128": "publics/images/icon-128.png"
     },
 
