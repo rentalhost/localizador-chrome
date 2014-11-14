@@ -19,42 +19,8 @@ Trackers = new function() {
         "Objeto encaminhado": "Objeto encaminhado para:",
     };
 
-    // Obtém se uma token é atualizável.
-    this.isRefreshable = function(tracker_event) {
-        // Se não houver informações suficiente, sempre será atualizável.
-        if(!tracker_event) {
-            return true;
-        }
-
-        // Caso contrário, verifica na lista.
-        var token = tracker_event.type.substr(0, 2) + tracker_event.status;
-        return token_unrefreshable.indexOf(token) === -1;
-    };
-
-    // Obtém o tipo formatado.
-    this.getType = function(tracker_event) {
-        return tracker_event.type.substr(0, 2) + tracker_event.status;
-    };
-
-    // Obtém a melhor descrição e token para o tipo do Tracker.
-    this.getToken = function(tracker_event) {
-        var type = this.getType(tracker_event);
-
-        // Localiza uma token positiva.
-        if(token_positives.indexOf(type) !== -1) {
-            return "positive";
-        }
-
-        // Localiza uma token negativa.
-        if(token_negatives.indexOf(type) !== -1) {
-            return "negative";
-        }
-
-        return "default";
-    };
-
     // Obtém a localização definida.
-    this.getPlace = function(tracker_place) {
+    this.parsePlace = function(tracker_place) {
         // Se não existir dados suficientes, não retorna nada.
         if(!tracker_place) {
             return;
@@ -80,16 +46,39 @@ Trackers = new function() {
         return place_result;
     };
 
-    // Obtém a descrição definida.
-    this.getDescription = function(tracker_event) {
-        var tracker_description = token_alternatives[tracker_event.description] || tracker_event.description;
+    // Obtém todas as propriedades de um evento.
+    this.getEventProperties = function(tracker_event) {
+        // Define o tipo compacto do evento.
+        var tracker_event       = tracker_event || {},
+            tracker_type        = tracker_event.type.substr(0, 2) + tracker_event.status,
+            tracker_pole        = null,
+            tracker_description = token_alternatives[tracker_event.description] || tracker_event.description;
+
+        // Definição do pólo.
+        // Localiza uma token positiva.
+        if(token_positives.indexOf(tracker_type) !== -1) {
+            tracker_pole = "positive";
+        }
+        else
+        // Localiza uma token negativa.
+        if(token_negatives.indexOf(tracker_type) !== -1) {
+            tracker_pole = "negative";
+        }
 
         // Adiciona um ponto final, se possível.
         if(!tracker_description.match(/\B$/)) {
             tracker_description+= ".";
         }
 
-        return tracker_description;
+        // Retorna as propriedades coletadas.
+        return {
+            "isRefreshable": !tracker_event || token_unrefreshable.indexOf(tracker_type) === -1,
+            "pole"         : tracker_pole,
+            "description"  : tracker_description,
+            "timing"       : tracker_event.date ? tracker_event.date + " às " + tracker_event.time : null,
+            "placeFrom"    : Trackers.parsePlace(tracker_event.from) || "",
+            "placeDestiny" : Trackers.parsePlace(tracker_event.destiny) || "",
+        };
     };
 
     // Obtém todos os Trackers registrados.

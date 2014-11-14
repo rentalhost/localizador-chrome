@@ -7,13 +7,16 @@ $(function() {
         trackers_refresh = $("#trackers-refresh"),
         trackers_list    = trackers_model.parent();
 
+    // Elementos de detalhes.
+    var details_model    = $("#trackers-details-model").detach();
+
     // Define uma referência do próximo dia.
     var current_timestamp = new Date;
     current_timestamp.setDate(current_timestamp.getDate() + 1);
     current_timestamp.setHours(0, 0, 0, 0);
 
     // Desanexa o Tracker de modelo da página.
-    trackers_model.detach().removeClass("hide");
+    trackers_model.detach();
 
     // Obtém o modelo do Tracker.
     Trackers.getModel = function(tracker_code, callback) {
@@ -48,7 +51,7 @@ $(function() {
     Trackers.listUpdate = function(trackers) {
         jQuery.each(trackers, function(index, tracker) {
             Trackers.getModel(tracker.code, function(model) {
-                var model_mapper  = Utils.fieldsMapper(model[0], "data-name");
+                var model_mapper       = Utils.fieldsMapper(model[0], "data-name");
 
                 // Atualiza o modelo do Tracker.
                 model.attr({
@@ -68,26 +71,26 @@ $(function() {
                 // Se o status do Tracker for loaded, carrega as informações adicionais.
                 if(tracker.events
                 && tracker.events.length) {
-                    var tracker_event = tracker.events[0];
+                    var tracker_event      = tracker.events[0],
+                        tracker_properties = Trackers.getEventProperties(tracker_event);
 
                     // Atualiza a Timestamp do Tracker.
                     model.attr("data-tracker-timestamp", Utils.toTimestamp(tracker_event) || current_timestamp.getTime());
-                    model.addClass(Trackers.getToken(tracker_event));
+                    model.addClass(tracker_properties.pole);
 
                     // Preenche a localização.
-                    $(model_mapper.placeFrom).html(Trackers.getPlace(tracker_event.from) || "");
-                    $(model_mapper.placeDestiny).html(Trackers.getPlace(tracker_event.destiny) || "");
+                    $(model_mapper.placeFrom).html(tracker_properties.placeFrom);
+                    $(model_mapper.placeDestiny).html(tracker_properties.placeDestiny);
 
                     // Preenche a data e hora.
-                    var tracker_date = tracker_event.date ? tracker_event.date + " às " + tracker_event.time : "-";
-                    $(model_mapper.date).text(tracker_date);
+                    $(model_mapper.date).text(tracker_properties.timing || "-");
 
                     // Preenche a situação atual.
-                    $(model_mapper.description).text(Trackers.getDescription(tracker_event));
+                    $(model_mapper.description).text(tracker_properties.description);
                 }
 
                 // Determina o modo de atualização.
-                $(model_mapper.actionRefresh).toggleClass("disabled", !Trackers.isRefreshable(tracker_event));
+                $(model_mapper.actionRefresh).toggleClass("disabled", !tracker_properties.isRefreshable);
             });
         });
     };
@@ -351,6 +354,39 @@ $(function() {
             });
         };
 
+        // Inicia a exibição de um Tracker.
+        this.triggerTrackerDetailsModalShow = function(ev) {
+            var tracker_code = $(this).closest("tr").attr("data-tracker-code");
+
+            // Carrega o Tracker.
+            Trackers.get(tracker_code, function(tracker) {
+                var modal_details   = $("#modal-details"),
+                    modal_movements = modal_details.find(".tracker.movements tbody");
+                modal_details.find("> .header").text("Detalhes de \"" + tracker.title + "\"");
+
+                // Limpa as movimentações.
+                modal_movements.empty();
+
+                // Aplica todas as movimentações.
+                jQuery.each(tracker.events, function(index, value) {
+                    var movement_element    = details_model.clone(),
+                        movement_mapper     = Utils.fieldsMapper(movement_element, "data-name"),
+                        movement_properties = Trackers.getEventProperties(value);
+
+                    // Preenche com as propriedades.
+                    $(movement_mapper.timing).text(movement_properties.timing || "-");
+                    $(movement_mapper.placeFrom).text(movement_properties.placeFrom);
+                    $(movement_mapper.placeDestiny).text(movement_properties.placeDestiny);
+                    $(movement_mapper.description).text(movement_properties.description);
+                    movement_element.addClass(movement_properties.pole);
+
+                    movement_element.appendTo(modal_movements);
+                });
+
+                modal_details.modal("show");
+            });
+        };
+
         // Inicia a remoção de um Tracker.
         this.triggerTrackerRemoveModalShow = function() {
             var modal_remove = $("#modal-remove"),
@@ -401,6 +437,9 @@ $(function() {
 
     // Inicia a criação de um Tracker.
     $(document).on("click", "[data-action-trigger=create-tracker]", Actions.triggerTrackerCreateModalShow);
+
+    // Inicia a exibição de um Tracker.
+    $(document).on("click", "[data-action-trigger=show-tracker]", Actions.triggerTrackerDetailsModalShow);
 
     // Inicia a edição de um Tracker.
     $(document).on("click", "[data-action-trigger=edit-tracker]", function(ev) {

@@ -243,6 +243,10 @@
   content: '\f0da';
 }
 
+/*******************************
+        User Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -369,6 +373,10 @@
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -3068,6 +3076,10 @@
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -3908,6 +3920,10 @@ a.ui.card:hover,
          Theme Overrides
 *******************************/
 
+/*******************************
+    User Variable Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -4209,6 +4225,10 @@ a.ui.card:hover,
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+        User Overrides
 *******************************/
 
 /*
@@ -4709,6 +4729,10 @@ a.ui.card:hover,
 
 */
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -4976,6 +5000,10 @@ a.ui.card:hover,
          Theme Overrides
 *******************************/
 
+/*******************************
+    User Variable Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -5163,6 +5191,10 @@ body.dimmed.dimmable > :not(.dimmer) {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+        User Overrides
 *******************************/
 
 /*
@@ -5408,6 +5440,10 @@ body.dimmed.dimmable > :not(.dimmer) {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -6437,6 +6473,10 @@ select.ui.dropdown {
 }
 */
 
+/*******************************
+        User Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -6727,6 +6767,10 @@ select.ui.dropdown {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+    User Variable Overrides
 *******************************/
 
 /*
@@ -7983,6 +8027,10 @@ i.flag.zimbabwe:before {
   background-position: -108px -390px;
 }
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -8884,6 +8932,10 @@ i.flag.zimbabwe:before {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -10223,6 +10275,10 @@ i.flag.zimbabwe:before {
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -10829,6 +10885,10 @@ a.ui.inverted.yellow.header:hover {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -13552,6 +13612,10 @@ i.icon.weixin:before {
   content: "\f1d7";
 }
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -13805,6 +13869,10 @@ img.ui.bordered.image {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -14274,6 +14342,10 @@ img.ui.bordered.image {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -14766,6 +14838,10 @@ img.ui.bordered.image {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+    User Variable Overrides
 *******************************/
 
 /*
@@ -15782,6 +15858,10 @@ a.ui.yellow.label:hover:before {
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -16354,7 +16434,8 @@ ul.ui.list li:before,
 .ui.bulleted.list > .item:before {
   position: absolute;
   top: auto;
-  left: -1rem;
+  left: auto;
+  margin-left: -1rem;
   content: '•';
   opacity: 1;
   color: rgba(0, 0, 0, 0.8);
@@ -16417,7 +16498,9 @@ ol.ui.list li:before,
 .ui.ordered.list .list > .item:before,
 .ui.ordered.list > .item:before {
   position: absolute;
-  left: -1.25rem;
+  top: auto;
+  left: auto;
+  margin-left: -1.25rem;
   counter-increment: ordered;
   content: counters(ordered, ".") " ";
   text-align: right;
@@ -16430,12 +16513,12 @@ ol.ui.list li:before,
 
 ol.ui.list ol,
 .ui.ordered.list .list {
-  margin-left: 2em;
+  margin-left: 1em;
 }
 
 ol.ui.list ol li:before,
 .ui.ordered.list .list > .item:before {
-  left: -2em;
+  margin-left: -2em;
 }
 
 /* Horizontal Ordered */
@@ -16492,11 +16575,6 @@ ol.ui.horizontal.list li:before,
   padding-left: 1rem;
 }
 
-.ui.divided.bulleted.list .list > .item:before,
-.ui.divided.bulleted.list > .item:before {
-  left: 0em;
-}
-
 /* Divided Ordered */
 
 .ui.divided.ordered.list {
@@ -16508,11 +16586,6 @@ ol.ui.horizontal.list li:before,
   padding-left: 1.25rem;
 }
 
-.ui.divided.ordered.list .list > .item:before,
-.ui.divided.ordered.list > .item:before {
-  left: 0em;
-}
-
 .ui.divided.ordered.list .item .list {
   margin-left: 0em;
   margin-right: 0em;
@@ -16520,7 +16593,7 @@ ol.ui.horizontal.list li:before,
 }
 
 .ui.divided.ordered.list .item .list > .item {
-  padding-left: 2em;
+  padding-left: 1em;
 }
 
 /* Divided Selection */
@@ -16602,11 +16675,6 @@ ol.ui.horizontal.list li:before,
   padding-left: 1rem;
 }
 
-.ui.celled.bulleted.list .list > .item:before,
-.ui.celled.bulleted.list > .item:before {
-  left: 0em;
-}
-
 .ui.celled.bulleted.list .item .list {
   margin-left: -1rem;
   margin-right: -1rem;
@@ -16624,11 +16692,6 @@ ol.ui.horizontal.list li:before,
   padding-left: 1.25rem;
 }
 
-.ui.celled.ordered.list .list > .item:before,
-.ui.celled.ordered.list > .item:before {
-  left: 0em;
-}
-
 .ui.celled.ordered.list .item .list {
   margin-left: 0em;
   margin-right: 0em;
@@ -16636,7 +16699,7 @@ ol.ui.horizontal.list li:before,
 }
 
 .ui.celled.ordered.list .list > .item {
-  padding-left: 2em;
+  padding-left: 1em;
 }
 
 /* Celled Horizontal */
@@ -16758,6 +16821,10 @@ ol.ui.horizontal.list li:before,
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+    User Variable Overrides
 *******************************/
 
 /*
@@ -17051,6 +17118,10 @@ ol.ui.horizontal.list li:before,
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -18831,6 +18902,10 @@ ol.ui.horizontal.list li:before,
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -19292,6 +19367,10 @@ ol.ui.horizontal.list li:before,
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+    User Variable Overrides
 *******************************/
 
 /*
@@ -19761,6 +19840,10 @@ ol.ui.horizontal.list li:before,
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -19902,6 +19985,10 @@ a.ui.nag {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+        User Overrides
 *******************************/
 
 /*
@@ -20193,6 +20280,10 @@ a.ui.nag {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+        User Overrides
 *******************************/
 
 /*
@@ -20737,6 +20828,10 @@ a.ui.nag {
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -21014,6 +21109,10 @@ a.ui.nag {
 .ui.heart.rating .active.icon:before {
   content: '\f004';
 }
+
+/*******************************
+         Site Overrides
+*******************************/
 
 /*
  * # Semantic UI
@@ -21497,6 +21596,10 @@ td,
 th {
   padding: 0;
 }
+
+/*******************************
+         Site Overrides
+*******************************/
 
 /*
  * # Semantic UI
@@ -22144,6 +22247,10 @@ th {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -22811,6 +22918,10 @@ th {
          Theme Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -22965,6 +23076,10 @@ th {
          Theme Overrides
 *******************************/
 
+/*******************************
+        User Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -23002,7 +23117,7 @@ th {
   z-index: 102;
 }
 
-/* 3D Rendering Fix */
+/* 3D Rendering */
 
 .ui.sidebar * {
   -webkit-backface-visibility: hidden;
@@ -23613,6 +23728,10 @@ a:hover {
         Global Overrides
 *******************************/
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -24051,6 +24170,10 @@ a:hover {
          Theme Overrides
 *******************************/
 
+/*******************************
+    User Variable Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -24442,6 +24565,10 @@ a:hover {
   /* '' */
 }
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -24511,6 +24638,10 @@ a:hover {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -24596,6 +24727,10 @@ a:hover {
 
 /*******************************
          Tab Overrides
+*******************************/
+
+/*******************************
+        User Overrides
 *******************************/
 
 /*
@@ -25593,6 +25728,10 @@ a:hover {
 
 /*******************************
          Theme Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/
 
 /*
@@ -26681,6 +26820,10 @@ a:hover {
   }
 }
 
+/*******************************
+         Site Overrides
+*******************************/
+
 /*
  * # Semantic UI
  * https://github.com/Semantic-Org/Semantic-UI
@@ -26799,4 +26942,8 @@ a:hover {
 
 /*******************************
         Video Overrides
+*******************************/
+
+/*******************************
+         Site Overrides
 *******************************/

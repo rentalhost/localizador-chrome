@@ -174,6 +174,41 @@
             </div>
         </div>
 
+        <!-- MODAL DETAILS -->
+        <div class="ui large modal scrolling" id="modal-details">
+            <i class="close icon"></i>
+            <div class="ui header">Detalhes</div>
+            <div class="content">
+                <div class="ui header">
+                    Movimentações
+                </div>
+                <table class="ui table tracker movements">
+                    <thead>
+                        <tr>
+                            <th style="width: 160px;">Data</th>
+                            <th>Localização</th>
+                            <th style="width: 400px;">Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="trackers-details-model">
+                            <td data-name="timing"></td>
+                            <td>
+                                <strong data-name="placeFrom"></strong>
+                            </td>
+                            <td>
+                                <strong data-name="description"></strong><br />
+                                <small data-name="placeDestiny"></small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <div class="ui primary approve button">OK</div>
+            </div>
+        </div>
+
         <!-- MODEL LOADING -->
         <div class="ui hide" id="model-loading">
             <i class="circular location arrow loading icon"></i>
@@ -231,10 +266,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr id="trackers-model" class="ui hide" style="height: 55px;">
+                                <tr id="trackers-model" style="height: 55px;">
                                     <td class="collapsing">
                                         <i class="arrow icon" data-name="direction"></i>
-                                        <a class="link" data-name="code"></a>
+                                        <a class="link" data-action-trigger="show-tracker" data-name="code"></a>
                                     </td>
                                     <td>
                                         <strong data-name="title"></strong><br />
@@ -247,7 +282,7 @@
                                     </td>
                                     <td class="collapsing">
                                         <i data-content="Atualizar" data-action-trigger="refresh-tracker" data-name="actionRefresh" class="link large refresh icon low opacity disabled"></i>
-                                        <i data-content="Ampliar" class="link large zoom icon low opacity"></i>
+                                        <i data-content="Ampliar" data-action-trigger="show-tracker" class="link large zoom icon low opacity"></i>
                                         <i data-content="Editar" data-action-trigger="edit-tracker" class="link large write icon low opacity"></i>
                                         <i data-content="Remover" data-action-trigger="remove-tracker" class="link large trash red icon low opacity"></i>
                                     </td>

@@ -102,7 +102,7 @@ $.fn.accordion = function(parameters) {
         },
 
         observeChanges: function() {
-          if(MutationObserver !== undefined) {
+          if('MutationObserver' in window) {
             observer = new MutationObserver(function(mutations) {
               module.debug('DOM tree modified, updating selector cache');
               module.refresh();
@@ -2236,7 +2236,7 @@ $.fn.checkbox = function(parameters) {
         },
 
         observeChanges: function() {
-          if(MutationObserver !== undefined) {
+          if('MutationObserver' in window) {
             observer = new MutationObserver(function(mutations) {
               module.debug('DOM tree modified, updating selector cache');
               module.refresh();
@@ -3602,7 +3602,7 @@ $.fn.dropdown = function(parameters) {
         },
 
         observeChanges: function() {
-          if(MutationObserver !== undefined) {
+          if('MutationObserver' in window) {
             observer = new MutationObserver(function(mutations) {
               module.debug('DOM tree modified, updating selector cache');
               module.refresh();
@@ -3763,23 +3763,27 @@ $.fn.dropdown = function(parameters) {
             }
           },
           touchEvents: function() {
-            module.debug('Touch device detected binding touch events');
-            if( !module.is.searchSelection() ) {
+            module.debug('Touch device detected binding additional touch events');
+            if( module.is.searchSelection() ) {
+              // do nothing special yet
+            }
+            else {
               $module
                 .on('touchstart' + eventNamespace, module.event.test.toggle)
               ;
             }
-            $module
+            $menu
               .on('touchstart' + eventNamespace, selector.item, module.event.item.mouseenter)
-              .on('touchstart' + eventNamespace, selector.item, module.event.item.click)
             ;
           },
           mouseEvents: function() {
             module.verbose('Mouse detected binding mouse events');
             if( module.is.searchSelection() ) {
               $module
-                .on('focus' + eventNamespace, selector.search, module.event.searchFocus)
-                .on('blur' + eventNamespace, selector.search, module.event.searchBlur)
+                .on('mousedown' + eventNamespace, selector.menu, module.event.menu.activate)
+                .on('mouseup'   + eventNamespace, selector.menu, module.event.menu.deactivate)
+                .on('focus'     + eventNamespace, selector.search, module.event.searchFocus)
+                .on('blur'      + eventNamespace, selector.search, module.event.searchBlur)
               ;
             }
             else {
@@ -3801,14 +3805,12 @@ $.fn.dropdown = function(parameters) {
               }
               $module
                 .on('mousedown' + eventNamespace, module.event.mousedown)
-                .on('mouseup' + eventNamespace, module.event.mouseup)
-                .on('focus' + eventNamespace, module.event.focus)
-                .on('blur' + eventNamespace, module.event.blur)
+                .on('mouseup'   + eventNamespace, module.event.mouseup)
+                .on('focus'     + eventNamespace, module.event.focus)
+                .on('blur'      + eventNamespace, module.event.blur)
               ;
             }
-            $module
-              .on('mousedown'  + eventNamespace, selector.item, module.event.item.mousedown)
-              .on('mouseup'    + eventNamespace, selector.item, module.event.item.mouseup)
+            $menu
               .on('mouseenter' + eventNamespace, selector.item, module.event.item.mouseenter)
               .on('mouseleave' + eventNamespace, selector.item, module.event.item.mouseleave)
               .on('click'      + eventNamespace, selector.item, module.event.item.click)
@@ -4031,14 +4033,15 @@ $.fn.dropdown = function(parameters) {
             }
           },
 
-          item: {
-
-            mousedown: function() {
+          menu: {
+            activate: function() {
               itemActivated = true;
             },
-            mouseup: function() {
+            deactivate: function() {
               itemActivated = false;
-            },
+            }
+          },
+          item: {
             mouseenter: function(event) {
               var
                 $currentMenu = $(this).find(selector.menu),
@@ -4263,7 +4266,7 @@ $.fn.dropdown = function(parameters) {
                         : optionText
                   ;
                   if(strict) {
-                    module.debug('Ambiguous dropdown value using strict type check', value);
+                    module.verbose('Ambiguous dropdown value using strict type check', $choice, value);
                     if( optionValue === value ) {
                       $selectedItem = $(this);
                     }
@@ -4513,6 +4516,8 @@ $.fn.dropdown = function(parameters) {
                 $currentMenu
                   .transition({
                     animation  : settings.transition + ' in',
+                    debug      : settings.debug,
+                    verbose    : settings.verbose,
                     duration   : settings.duration,
                     queue      : true,
                     onStart    : start,
@@ -4582,6 +4587,8 @@ $.fn.dropdown = function(parameters) {
                   .transition({
                     animation  : settings.transition + ' out',
                     duration   : settings.duration,
+                    debug      : settings.debug,
+                    verbose    : settings.verbose,
                     queue      : true,
                     onStart    : start,
                     onComplete : function() {
@@ -5806,6 +5813,7 @@ $.fn.modal = function(parameters) {
 
         element      = this,
         instance     = $module.data(moduleNamespace),
+        observer,
         module
       ;
       module  = {
@@ -5817,6 +5825,7 @@ $.fn.modal = function(parameters) {
             module.error(error.dimmer);
             return;
           }
+
           $dimmable = $context
             .dimmer({
               debug      : settings.debug,
@@ -5829,25 +5838,18 @@ $.fn.modal = function(parameters) {
               }
             })
           ;
-
           if(settings.detachable) {
             $dimmable.dimmer('add content', $module);
           }
 
-          $dimmer = $dimmable
-            .dimmer('get dimmer')
-          ;
-
+          $dimmer = $dimmable.dimmer('get dimmer');
           $otherModals = $module.siblings(selector.modal);
           $allModals   = $otherModals.add($module);
 
           module.verbose('Attaching close events', $close);
-          $close
-            .on('click' + eventNamespace, module.event.close)
-          ;
-          $window
-            .on('resize' + eventNamespace, module.event.resize)
-          ;
+          module.bind.events();
+          module.observeChanges();
+
           module.instantiate();
         },
 
@@ -5865,12 +5867,22 @@ $.fn.modal = function(parameters) {
             .removeData(moduleNamespace)
             .off(eventNamespace)
           ;
-          $close
-            .off(eventNamespace)
-          ;
-          $context
-            .dimmer('destroy')
-          ;
+          $close.off(eventNamespace);
+          $context.dimmer('destroy');
+        },
+
+        observeChanges: function() {
+          if('MutationObserver' in window) {
+            observer = new MutationObserver(function(mutations) {
+              module.debug('DOM tree modified, updating selector cache');
+              module.refresh();
+            });
+            observer.observe(element, {
+              childList : true,
+              subtree   : true
+            });
+            module.debug('Setting up mutation observer', observer);
+          }
         },
 
         refresh: function() {
@@ -5898,6 +5910,17 @@ $.fn.modal = function(parameters) {
           }
           else {
             module.error(error.notFound, selector);
+          }
+        },
+
+        bind: {
+          events: function() {
+            $close
+              .on('click' + eventNamespace, module.event.close)
+            ;
+            $window
+              .on('resize' + eventNamespace, module.event.resize)
+            ;
           }
         },
 
@@ -5996,6 +6019,10 @@ $.fn.modal = function(parameters) {
               $.proxy(settings.onShow, element)();
               if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
                 module.debug('Showing modal with css animations');
+                module.cacheSizes();
+                module.set.position();
+                module.set.screenHeight();
+                module.set.type();
                 $module
                   .transition({
                     debug     : settings.debug,
@@ -6003,10 +6030,6 @@ $.fn.modal = function(parameters) {
                     queue     : false,
                     duration  : settings.duration,
                     onStart   : function() {
-                      module.cacheSizes();
-                      module.set.position();
-                      module.set.screenHeight();
-                      module.set.type();
                       module.set.clickaway();
                     },
                     onComplete : function() {
@@ -7134,7 +7157,7 @@ $.fn.popup = function(parameters) {
         destroy: function() {
           module.debug('Destroying previous module');
           if($popup && !settings.preserve) {
-            module.remove();
+            module.removePopup();
           }
           $module
             .off(eventNamespace)
@@ -7265,9 +7288,7 @@ $.fn.popup = function(parameters) {
 
         hide: function(callback) {
           callback = $.isFunction(callback) ? callback : function(){};
-          $module
-            .removeClass(className.visible)
-          ;
+          module.remove.visible();
           module.unbind.close();
           if( module.is.visible() ) {
             module.restore.conditions();
@@ -7305,10 +7326,10 @@ $.fn.popup = function(parameters) {
           }
         },
 
-        remove: function() {
+        removePopup: function() {
           module.debug('Removing popup');
           $popup
-            .remove()
+            .removePopup()
           ;
         },
 
@@ -7337,17 +7358,15 @@ $.fn.popup = function(parameters) {
           show: function(callback) {
             callback = $.isFunction(callback) ? callback : function(){};
             if(settings.transition && $.fn.transition !== undefined && $module.transition('is supported')) {
+              module.set.visible();
               $popup
                 .transition({
-                  animation : settings.transition + ' in',
-                  queue     : false,
-                  duration  : settings.duration,
-                  onStart   : function() {
-                    $module
-                      .addClass(className.visible)
-                    ;
-                  },
-                  onComplete  : function() {
+                  animation  : settings.transition + ' in',
+                  queue      : false,
+                  debug      : settings.debug,
+                  verbose    : settings.verbose,
+                  duration   : settings.duration,
+                  onComplete : function() {
                     module.bind.close();
                     $.proxy(callback, element)();
                   }
@@ -7355,9 +7374,7 @@ $.fn.popup = function(parameters) {
               ;
             }
             else {
-              $module
-                .addClass(className.visible)
-              ;
+              module.set.visible();
               $popup
                 .stop()
                 .fadeIn(settings.duration, settings.easing, function() {
@@ -7377,6 +7394,8 @@ $.fn.popup = function(parameters) {
                   animation  : settings.transition + ' out',
                   queue      : false,
                   duration   : settings.duration,
+                  debug      : settings.debug,
+                  verbose    : settings.verbose,
                   onComplete : function() {
                     module.reset();
                     callback();
@@ -7639,8 +7658,17 @@ $.fn.popup = function(parameters) {
               $popup.removeClass(className.loading);
               return true;
             }
-          }
+          },
 
+          visible: function() {
+            $module.addClass(className.visible);
+          }
+        },
+
+        remove: {
+          visible: function() {
+            $module.removeClass(className.visible);
+          }
         },
 
         bind: {
@@ -7712,9 +7740,7 @@ $.fn.popup = function(parameters) {
         },
 
         reset: function() {
-          $popup
-            .removeClass(className.visible)
-          ;
+          module.remove.visible();
           if(settings.preserve || settings.popup) {
             if($.fn.transition !== undefined) {
               $popup
@@ -7723,7 +7749,7 @@ $.fn.popup = function(parameters) {
             }
           }
           else {
-            module.remove();
+            module.removePopup();
           }
         },
 
@@ -7907,8 +7933,8 @@ $.fn.popup.settings = {
   name           : 'Popup',
 
   debug          : false,
-  verbose        : false,
-  performance    : false,
+  verbose        : true,
+  performance    : true,
   namespace      : 'popup',
 
   onCreate       : function(){},
@@ -11217,19 +11243,17 @@ $.fn.sidebar = function(parameters) {
           if(settings.transition == 'scale down' || (module.is.mobile() && transition !== 'overlay')) {
             module.scrollToTop();
           }
-          module.add.bodyCSS();
           module.set.transition();
           module.repaint();
           animate = function() {
+            module.add.bodyCSS();
             module.set.animating();
-            requestAnimationFrame(function() {
-              module.set.visible();
-              if(!module.othersActive()) {
-                if(settings.dimPage) {
-                  $pusher.addClass(className.dimmed);
-                }
+            module.set.visible();
+            if(!module.othersActive()) {
+              if(settings.dimPage) {
+                $pusher.addClass(className.dimmed);
               }
-            });
+            }
           };
           transitionEnd = function(event) {
             if( event.target == $transition[0] ) {
@@ -13089,7 +13113,7 @@ $.fn.sticky = function(parameters) {
           var
             context = $context[0]
           ;
-          if(MutationObserver !== undefined) {
+          if('MutationObserver' in window) {
             observer = new MutationObserver(function(mutations) {
               clearTimeout(module.timer);
               module.timer = setTimeout(function() {
