@@ -509,6 +509,10 @@ $(function() {
         }).popup("show");
     });
 
+    $(".message .close").on("click", function() {
+        $(this).closest(".message").hide();
+    });
+
     // Carrega a lista de trackers.
     Trackers.listReload();
 
