@@ -17,6 +17,19 @@ Utils = new function() {
         return mapper;
     };
 
+    // Duplica um objeto.
+    this.duplicateObject = function(object) {
+        var object_copy = object.constructor();
+
+        for(var object_attr in object) {
+            if(object.hasOwnProperty(object_attr)) {
+                object_copy[object_attr] = object[object_attr];
+            }
+        }
+
+        return object_copy;
+    };
+
     // Corrige um nome.
     this.fixName = function(name) {
         return (name || "").trim().toLowerCase()

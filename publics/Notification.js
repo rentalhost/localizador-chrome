@@ -1,93 +1,88 @@
-// Helper de Notificações.
-var Notification = new function() {
+// Copia o manifest do Chrome.
+var chrome_manifest  = chrome.runtime.getManifest();
+
+// Controlador de Notificações.
+var Notification = function(options) {
+    var self = this;
+
     // Armazena as opções originais.
-    var original_options = {};
+    var original_options,
+        options          = options || {};
 
-    // Clona um objeto.
-    function object_clone(object) {
-        var object_copy = object.constructor();
+    // Definições padrões.
+    options.id           = options.id          || "";
+    options.type         = options.type        || "basic";
+    options.title        = options.title       || chrome_manifest.name;
+    options.iconUrl      = options.iconUrl     || chrome_manifest.icons["80"];
+    options.isClickable  = options.isClickable || !!options["callback.clicked"];
+    original_options     = Utils.duplicateObject(options);
 
-        for(var object_attr in object) {
-            if(object.hasOwnProperty(object_attr)) {
-                object_copy[object_attr] = object[object_attr];
-            }
-        }
+    // Remove alguns dados de opções.
+    delete options["id"];
+    delete options["callback.button0"];
+    delete options["callback.button1"];
+    delete options["callback.clicked"];
+    delete options["callback.closed"];
 
-        return object_copy;
-    };
+    // Lança a notificação.
+    chrome.notifications.create(original_options.id, options, function(id_notification) {
+        Notification.notifications[id_notification] = self;
+        original_options.id = id_notification;
+    });
 
-    // Cria uma nova notificação.
-    this.create = function(options) {
-        // Definições padrões.
-        options.type        = options.type        || "basic";
-        options.title       = options.title       || chrome.runtime.getManifest().name;
-        options.iconUrl     = options.iconUrl     || "publics/images/icon-tracker-default.png";
-        options.isClickable = options.isClickable || !!options["callback.clicked"];
-
-        // Armazena as opções originais.
-        original_options = object_clone(options);
-
-        // Remove alguns dados de opções.
-        delete options["id"];
-        delete options["callback.button0"];
-        delete options["callback.button1"];
-        delete options["callback.clicked"];
-        delete options["callback.closed"];
-
-        // Define o ID da Notificação.
-        original_options.id = original_options.id || "";
-
-        // Exibe uma notificação..
-        this.clear(function() {
-            chrome.notifications.create(original_options.id, options, function(create_notification_id) {
-                original_options.id = create_notification_id;
-            });
-        });
-    };
-
-    // Limpa a última notificação.
+    // Limpa a notificação.
     this.clear = function(callback) {
-        if(original_options.id) {
-            callback = callback || function() {};
-            chrome.notifications.clear(original_options.id, callback);
+        delete Notification.notifications[original_options.id];
+        chrome.notifications.clear(original_options.id, callback || function() { /** ... */ });
+    };
+
+    // Lança um evento da notificação.
+    this.trigger = function(type, args) {
+        // Se não houver um callback para o tipo definido, ignora.
+        if(!original_options[type]) {
             return;
         }
 
-        callback(false);
-    };
-
-    // Ativa um callback.
-    var callback_trigger = function(notification_id, callback_type, callback_args) {
-        if(original_options.id === notification_id) {
-            // Cancela a ativação se um callback não foi informado.
-            var callback_function = original_options[callback_type];
-            if(!callback_function) {
-                return;
-            }
-
-            // Se o callback refere-se a uma string, a traduz.
-            if(typeof callback_function === "string") {
-                this.clear();
-                return callback_trigger.apply(this, [ notification_id, callback_function, callback_args ]);
-            }
-
-            // Caso contrário, finalmente chama o callback.
-            callback_function.apply(this, callback_args);
+        // Se o callback foi definido, mas é uma string,
+        // reinicia o lançamento com o evento definido na string.
+        if(typeof original_options[type] === "string") {
+            this.trigger.call(this, original_options[type], args);
+            return;
         }
+
+        // Finalmente executa o callback definido.
+        original_options[type].apply(this, args);
     };
-
-    // Controla os botões.
-    chrome.notifications.onButtonClicked.addListener(function(event_notification_id, event_button_index) {
-        callback_trigger(event_notification_id, "callback.button" + event_button_index, [ event_button_index ]);
-    });
-
-    // Controla o clique.
-    chrome.notifications.onClicked.addListener(function(event_notification_id) {
-        callback_trigger(event_notification_id, "callback.clicked");
-    });
-
-    // Controla o fechamento.
-    chrome.notifications.onClosed.addListener(function(event_notification_id, event_by_user) {
-        callback_trigger(event_notification_id, "callback.closed", [ event_by_user ]);
-    });
 };
+
+// Armazena todas as notificações geradas.
+Notification.notifications = {};
+
+// Cria uma nova notificação.
+Notification.create = function(options) {
+    return new Notification(options);
+};
+
+// Inicia um evento.
+Notification.triggerHandler = function(id_notification, type, args) {
+    var notification = Notification.notifications[id_notification];
+    if(notification) {
+        notification.trigger(type, args);
+        notification.clear();
+    }
+};
+
+// Controla os eventos de botões.
+chrome.notifications.onButtonClicked.addListener(function(id_notification, button_index) {
+    Notification.triggerHandler(id_notification, "callback.button" + button_index, [ button_index ]);
+});
+
+// Controla os eventos de clique.
+chrome.notifications.onClicked.addListener(function(id_notification) {
+    Notification.triggerHandler(id_notification, "callback.clicked");
+});
+
+// Controla os eventos de fechamento.
+chrome.notifications.onClosed.addListener(function(id_notification, event_by_user) {
+    Notification.triggerHandler(id_notification, "callback.closed", [ event_by_user ]);
+});
