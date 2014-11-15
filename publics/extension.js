@@ -376,13 +376,15 @@ $(function() {
 
                     // Preenche com as propriedades.
                     $(movement_mapper.timing).text(movement_properties.timing || "-");
-                    $(movement_mapper.placeFrom).text(movement_properties.placeFrom);
+                    $(movement_mapper.placeFrom).text(movement_properties.placeFrom || "-");
                     $(movement_mapper.placeDestiny).text(movement_properties.placeDestiny);
                     $(movement_mapper.description).text(movement_properties.description);
                     movement_element.addClass(movement_properties.pole);
 
                     // Adiciona um ícone indicando a posição atual.
-                    if(index === 0) {
+                    // Exceto quando houver apenas um item.
+                    if(index === 0
+                    && tracker.events.length > 1) {
                         var current_icon = document.createElement("i");
                         current_icon.classList.add("small", "chevron", "right", "icon");
                         $(movement_mapper.placeFrom).prepend(current_icon);
