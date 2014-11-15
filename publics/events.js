@@ -34,6 +34,7 @@ var TrackersXHR = new function() {
 
                         // Gera a notificação.
                         Notification.create({
+                            "id"            : tracker.code,
                             "iconUrl"       : "publics/images/icon-tracker-" + (tracker_properties.pole || "neutral") + ".png",
                             "title"         : tracker.title,
                             "message"       : tracker_properties.originalDescription + ".",
