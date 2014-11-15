@@ -1,0 +1,23 @@
+{
+    "name"       : "localizador-chrome",
+    "version"    : "0.1.0",
+    "description": "Saiba aonde está sua encomenda.",
+
+    "main": "compile.js",
+    "dependencies": {
+        "gulp"           : "~3.8",
+        "gulp-zip"       : "~2.0"
+    },
+
+    "author" : "Rentalhost.net",
+    "license": "MIT",
+
+    "homepage": "https://github.com/rentalhost/localizador-chrome",
+    "repository": {
+        "type": "git",
+        "url" : "https://github.com/rentalhost/localizador-chrome.git"
+    },
+    "bugs": {
+        "url": "https://github.com/rentalhost/localizador-chrome/issues"
+    }
+}
