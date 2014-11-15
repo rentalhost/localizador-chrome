@@ -52,7 +52,8 @@ $(function() {
     Trackers.listUpdate = function(trackers) {
         jQuery.each(trackers, function(index, tracker) {
             Trackers.getModel(tracker.code, function(model) {
-                var model_mapper       = Utils.fieldsMapper(model[0], "data-name");
+                var model_mapper       = Utils.fieldsMapper(model[0], "data-name"),
+                    model_refreshable  = true;
 
                 // Atualiza o modelo do Tracker.
                 model.attr({
@@ -88,10 +89,13 @@ $(function() {
 
                     // Preenche a situação atual.
                     $(model_mapper.description).text(tracker_properties.description);
+
+                    // Determina se é atualizável.
+                    model_refreshable = tracker_properties.isRefreshable;
                 }
 
                 // Determina o modo de atualização.
-                $(model_mapper.actionRefresh).toggleClass("disabled", !tracker_properties.isRefreshable);
+                $(model_mapper.actionRefresh).toggleClass("disabled", !model_refreshable);
             });
         });
     };
